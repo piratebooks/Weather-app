@@ -3,28 +3,71 @@ var globalForecast = [];
 var lat, lon;
 var currentFocus = -1;
 var autocompleteTimeout;
-const API_KEY = "ADD HERE"; //ADD HERE your OpenWeatherMap API key
 
-// Maps the API's icons to the ones from https://erikflowers.github.io/weather-icons/
+// Geoapify API key (replace with your actual key)
+const GEOAPIFY_API_KEY = "REPLACE HERE WITH YOUR GEOAPIFY API KEY";
+// Maps Open-Meteo weather codes to Weather Icons
 var weatherIconsMap = {
-    "01d": "wi-day-sunny",
-    "01n": "wi-night-clear",
-    "02d": "wi-day-cloudy",
-    "02n": "wi-night-cloudy",
-    "03d": "wi-cloud",
-    "03n": "wi-cloud",
-    "04d": "wi-cloudy",
-    "04n": "wi-cloudy",
-    "09d": "wi-showers",
-    "09n": "wi-showers",
-    "10d": "wi-day-hail",
-    "10n": "wi-night-hail",
-    "11d": "wi-thunderstorm",
-    "11n": "wi-thunderstorm",
-    "13d": "wi-snow",
-    "13n": "wi-snow",
-    "50d": "wi-fog",
-    "50n": "wi-fog"
+    0: "wi-day-sunny", // Clear sky
+    1: "wi-day-cloudy", // Mainly clear
+    2: "wi-day-cloudy", // Partly cloudy
+    3: "wi-cloudy", // Overcast
+    45: "wi-fog", // Fog
+    48: "wi-fog", // Depositing rime fog
+    51: "wi-showers", // Drizzle: Light
+    53: "wi-showers", // Drizzle: Moderate
+    55: "wi-showers", // Drizzle: Dense
+    56: "wi-day-hail", // Freezing Drizzle: Light
+    57: "wi-day-hail", // Freezing Drizzle: Dense
+    61: "wi-rain", // Rain: Slight
+    63: "wi-rain", // Rain: Moderate
+    65: "wi-rain", // Rain: Heavy
+    66: "wi-day-hail", // Freezing Rain: Light
+    67: "wi-day-hail", // Freezing Rain: Heavy
+    71: "wi-snow", // Snow fall: Slight
+    73: "wi-snow", // Snow fall: Moderate
+    75: "wi-snow", // Snow fall: Heavy
+    77: "wi-snow", // Snow grains
+    80: "wi-showers", // Rain showers: Slight
+    81: "wi-showers", // Rain showers: Moderate
+    82: "wi-showers", // Rain showers: Violent
+    85: "wi-snow", // Snow showers slight
+    86: "wi-snow", // Snow showers heavy
+    95: "wi-thunderstorm", // Thunderstorm: Slight or moderate
+    96: "wi-thunderstorm", // Thunderstorm with slight hail
+    99: "wi-thunderstorm" // Thunderstorm with heavy hail
+};
+
+// Maps weather codes to descriptions
+var weatherDescriptions = {
+    0: "Clear sky",
+    1: "Mainly clear",
+    2: "Partly cloudy",
+    3: "Overcast",
+    45: "Fog",
+    48: "Depositing rime fog",
+    51: "Light drizzle",
+    53: "Moderate drizzle",
+    55: "Dense drizzle",
+    56: "Light freezing drizzle",
+    57: "Dense freezing drizzle",
+    61: "Slight rain",
+    63: "Moderate rain",
+    65: "Heavy rain",
+    66: "Light freezing rain",
+    67: "Heavy freezing rain",
+    71: "Slight snow fall",
+    73: "Moderate snow fall",
+    75: "Heavy snow fall",
+    77: "Snow grains",
+    80: "Slight rain showers",
+    81: "Moderate rain showers",
+    82: "Violent rain showers",
+    85: "Slight snow showers",
+    86: "Heavy snow showers",
+    95: "Thunderstorm",
+    96: "Thunderstorm with hail",
+    99: "Thunderstorm with heavy hail"
 };
 
 $(function () {
@@ -41,13 +84,60 @@ function startClock() {
 }
 
 function getClientPosition() {
-    $.getJSON("https://ipapi.co/json/", function (position) {
-        $("#cityName").text(position.city + ", ");
-        $("#cityCode").text(position.country);
-        lat = position.latitude;
-        lon = position.longitude;
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            lat = position.coords.latitude;
+            lon = position.coords.longitude;
+            
+            // Use reverse geocoding to get city name
+            $.ajax({
+                url: "https://api.geoapify.com/v1/geocode/reverse",
+                data: {
+                    lat: lat,
+                    lon: lon,
+                    apiKey: GEOAPIFY_API_KEY,
+                    format: "json"
+                },
+                success: function (data) {
+                    var result = (data.features && data.features.length > 0 ? data.features[0] :
+                                (data.results && data.results.length > 0 ? data.results[0] : null));
+                    if (result) {
+                        var props = result.properties || result;
+                        var city = props.city || props.town || props.village || props.name || "Unknown";
+                        var country = props.country || "";
+                        $("#cityName").text(city + ", ");
+                        $("#cityCode").text(country);
+                    } else {
+                        $("#cityName").text("Current Location, ");
+                        $("#cityCode").text("");
+                    }
+                    getWeatherData(lat, lon);
+                },
+                error: function (err) {
+                    console.log("Reverse geocoding error", err);
+                    $("#cityName").text("Current Location, ");
+                    $("#cityCode").text("");
+                    getWeatherData(lat, lon);
+                }
+            });
+        }, function(error) {
+            console.log("Geolocation error:", error);
+            // Fallback to a default location (London) if geolocation fails
+            lat = 51.5074;
+            lon = -0.1278;
+            $("#cityName").text("London, ");
+            $("#cityCode").text("GB");
+            getWeatherData(lat, lon);
+        });
+    } else {
+        console.log("Geolocation not supported");
+        // Fallback to a default location
+        lat = 51.5074;
+        lon = -0.1278;
+        $("#cityName").text("London, ");
+        $("#cityCode").text("GB");
         getWeatherData(lat, lon);
-    });
+    }
 }
 
 function initSearch() {
@@ -103,8 +193,21 @@ function initSearch() {
 }
 
 function fetchCitySuggestions(query) {
-    $.getJSON("https://api.openweathermap.org/geo/1.0/direct?q=" + encodeURIComponent(query) + "&limit=5&appid=" + API_KEY, function (data) {
-        showAutocomplete(data);
+    $.ajax({
+        url: "https://api.geoapify.com/v1/geocode/search",
+        data: {
+            text: query,
+            apiKey: GEOAPIFY_API_KEY,
+            limit: 5,
+            format: "json"
+        },
+        success: function (data) {
+            showAutocomplete(data.features || data.results || []);
+        },
+        error: function (err) {
+            console.log("Geocoding error", err);
+            hideAutocomplete();
+        }
     });
 }
 
@@ -117,13 +220,22 @@ function showAutocomplete(cities) {
     }
 
     cities.forEach(function (city) {
-        var display = city.name + (city.state ? ", " + city.state : "") + ", " + city.country;
+        var props = city.properties || city;
+        var displayName = props.formatted || props.city || props.name || "";
+        var shortName = props.city || (displayName.split(',')[0] || "");
+        var country = props.country || "";
+        var state = props.state || "";
+        var latValue = city.geometry ? city.geometry.coordinates[1] : city.lat;
+        var lonValue = city.geometry ? city.geometry.coordinates[0] : city.lon;
+        
+        var display = shortName + (state ? ", " + state : "") + (country ? ", " + country : "");
+        
         var item = $('<div class="autocomplete-item"></div>');
-        item.html('<span>' + city.name + '</span><span class="city-country">' + (city.state || city.country) + '</span>');
+        item.html('<span>' + shortName + '</span><span class="city-country">' + (state || country) + '</span>');
         item.on("click", function () {
             $("#cityInput").val(display);
             hideAutocomplete();
-            getWeatherByCity(display);
+            getWeatherByCity(display, latValue, lonValue);
         });
         dropdown.append(item);
     });
@@ -149,20 +261,46 @@ function updateInputToHighlighted(items) {
     }
 }
 
-function getWeatherByCity(city) {
+function getWeatherByCity(city, providedLat, providedLon) {
     if (!city) return;
+    
+    // If lat/lon provided (from autocomplete), use them directly
+    if (providedLat && providedLon) {
+        lat = parseFloat(providedLat);
+        lon = parseFloat(providedLon);
+        $("#cityName").text(city.split(',')[0] + ", ");
+        $("#cityCode").text(city.split(',').pop().trim());
+        getWeatherData(lat, lon);
+        return;
+    }
+    
+    // Otherwise, geocode the city name first
     $.ajax({
-        type: "GET",
-        url: "https://api.openweathermap.org/data/2.5/forecast?q=" + encodeURIComponent(city) + "&appid=" + API_KEY + "&units=metric",
+        url: "https://api.geoapify.com/v1/geocode/search",
+        data: {
+            text: city,
+            apiKey: GEOAPIFY_API_KEY,
+            limit: 1,
+            format: "json"
+        },
         success: function (data) {
-            $("#cityName").text(data.city.name + ", ");
-            $("#cityCode").text(data.city.country);
-            lat = data.city.coord.lat;
-            lon = data.city.coord.lon;
-            processForecastData(data);
+            var feature = (data.features && data.features.length > 0 ? data.features[0] :
+                          (data.results && data.results.length > 0 ? data.results[0] : null));
+            if (feature) {
+                lat = parseFloat(feature.geometry ? feature.geometry.coordinates[1] : feature.lat);
+                lon = parseFloat(feature.geometry ? feature.geometry.coordinates[0] : feature.lon);
+                var props = feature.properties || feature;
+                var cityName = props.city || props.name || city.split(',')[0];
+                var country = props.country || "";
+                $("#cityName").text(cityName + ", ");
+                $("#cityCode").text(country);
+                getWeatherData(lat, lon);
+            } else {
+                console.log("City not found");
+            }
         },
         error: function (err) {
-            console.log("City not found", err);
+            console.log("Geocoding error", err);
         }
     });
 }
@@ -173,47 +311,95 @@ function getWeatherData(latitude, longitude) {
 
     $.ajax({
         type: "GET",
-        url: "https://api.openweathermap.org/data/2.5/forecast?APPID=" + API_KEY + "&lat=" + latitude + "&lon=" + longitude + "&units=metric",
-        cache: true,
+        url: "https://api.open-meteo.com/v1/forecast",
+        data: {
+            latitude: latitude,
+            longitude: longitude,
+            daily: "temperature_2m_max,temperature_2m_min,weathercode",
+            hourly: "temperature_2m,relative_humidity_2m,windspeed_10m",
+            timezone: "auto",
+            forecast_days: 5
+        },
         success: function (data) {
-            processForecastData(data);
+            processOpenMeteoData(data);
             $("#refreshButton").html("<i class='fa fa-refresh fa-fw'></i> Refresh");
+        },
+        error: function (err) {
+            console.log("Weather data error", err);
         }
     });
 }
 
-function processForecastData(data) {
+function processOpenMeteoData(data) {
     var dailyData = [];
-    var currentDay = "";
-    var tempDaily = null;
-
-    data.list.forEach(function (item) {
-        var date = new Date(item.dt * 1000).toDateString();
-        if (date !== currentDay) {
-            if (tempDaily) dailyData.push(tempDaily);
-            currentDay = date;
-            tempDaily = {
-                dt: item.dt,
-                temp: { day: item.main.temp, min: item.main.temp_min, max: item.main.temp_max },
-                humidity: item.main.humidity,
-                speed: item.wind.speed,
-                weather: item.weather
-            };
-        } else {
-            if (item.main.temp_min < tempDaily.temp.min) tempDaily.temp.min = item.main.temp_min;
-            if (item.main.temp_max > tempDaily.temp.max) tempDaily.temp.max = item.main.temp_max;
+    
+    // Process daily data
+    for (var i = 0; i < data.daily.time.length; i++) {
+        var date = new Date(data.daily.time[i]);
+        var weatherCode = data.daily.weathercode[i];
+        
+        // Get current day's hourly data for additional info
+        var dayStart = new Date(date);
+        dayStart.setHours(0, 0, 0, 0);
+        var dayEnd = new Date(date);
+        dayEnd.setHours(23, 59, 59, 999);
+        
+        var dayTemps = [];
+        var dayHumidity = [];
+        var dayWind = [];
+        
+        for (var h = 0; h < data.hourly.time.length; h++) {
+            var hourDate = new Date(data.hourly.time[h]);
+            if (hourDate >= dayStart && hourDate <= dayEnd) {
+                dayTemps.push(data.hourly.temperature_2m[h]);
+                dayHumidity.push(data.hourly.relative_humidity_2m[h]);
+                dayWind.push(data.hourly.windspeed_10m[h]);
+            }
         }
-    });
-    if (tempDaily) dailyData.push(tempDaily);
+        
+        var avgTemp = dayTemps.reduce((a, b) => a + b, 0) / dayTemps.length;
+        var avgHumidity = dayHumidity.reduce((a, b) => a + b, 0) / dayHumidity.length;
+        var avgWind = dayWind.reduce((a, b) => a + b, 0) / dayWind.length;
+        
+        dailyData.push({
+            dt: date.getTime() / 1000,
+            temp: { 
+                day: avgTemp, 
+                min: data.daily.temperature_2m_min[i], 
+                max: data.daily.temperature_2m_max[i] 
+            },
+            humidity: Math.round(avgHumidity),
+            speed: avgWind,
+            weather: [{
+                main: getWeatherMainFromCode(weatherCode),
+                description: weatherDescriptions[weatherCode] || "Unknown",
+                icon: weatherCode.toString()
+            }]
+        });
+    }
+    
     globalForecast = { list: dailyData };
     updateForecast(globalForecast);
+}
+
+function getWeatherMainFromCode(code) {
+    if (code === 0 || code === 1) return "Clear";
+    if (code === 2 || code === 3) return "Clouds";
+    if (code >= 45 && code <= 48) return "Fog";
+    if (code >= 51 && code <= 57) return "Drizzle";
+    if (code >= 61 && code <= 67) return "Rain";
+    if (code >= 71 && code <= 77) return "Snow";
+    if (code >= 80 && code <= 82) return "Rain";
+    if (code >= 85 && code <= 86) return "Snow";
+    if (code >= 95) return "Thunderstorm";
+    return "Unknown";
 }
 
 function updateForecast(forecast) {
     var today = forecast.list[0];
     $("#tempDescription").text(toCamelCase(today.weather[0].description));
     $("#humidity").text(today.humidity + "%");
-    $("#wind").text(today.speed + " m/s");
+    $("#wind").text(Math.round(today.speed * 10) / 10 + " km/h"); // Convert m/s to km/h for display
     $("#localDate").text(getFormattedDate(today.dt));
     $("#main-icon").attr("class", "wi " + weatherIconsMap[today.weather[0].icon]);
 

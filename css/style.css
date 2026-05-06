@@ -19,31 +19,17 @@ a:focus {
 }
 
 body {
+    min-height: 100vh;
+    margin: 0;
+    padding: 60px 20px 40px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
     background-color: #F4F6F7;
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
     transition: background-image 0.5s ease;
-}
-
-body.weather-sunny {
-    background-image: url('../img/sunny.jpg');
-}
-
-body.weather-cloudy {
-    background-image: url('../img/cloudy.jpg');
-}
-
-body.weather-rainy {
-    background-image: url('../img/rainy.jpg');
-}
-
-body.weather-snowy {
-    background-image: url('../img/snowy.jpg');
-}
-
-body.weather-windy {
-    background-image: url('../img/windy.jpg');
 }
 
 #wrapper {
@@ -52,7 +38,7 @@ body.weather-windy {
     backdrop-filter: blur(5px);
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
     border-radius: 15px;
-    margin: 60px auto;
+    margin: 0 auto;
     max-width: 720px;
     padding: 0px;
     color: white;
@@ -66,11 +52,30 @@ body.weather-windy {
 #mainTemperature {
     font-size: 5.5em;
     line-height: 0.7;
+    display: block;
+    margin: 20px auto 0;
+}
+
+#main-icon {
+    font-size: 85px;
+    display: block;
+    margin: 0 auto 10px;
 }
 
 #tempDescription {
     margin-top: 10px;
     text-align: center;
+}
+
+.col-md-5.col-sm-7 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 260px;
+}
+
+.col-md-5.col-sm-7 .row.text-center {
+    width: 100%;
 }
 
 .day-weather-box {
