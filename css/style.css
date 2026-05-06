@@ -1,0 +1,194 @@
+a {
+    color: white;
+    opacity: 0.6;
+    text-decoration: none;
+}
+
+a:hover,
+a:active,
+a:focus {
+    color: white;
+    text-decoration: none;
+    opacity: 1;
+}
+
+.active {
+    color: white;
+    text-decoration: none;
+    opacity: 1;
+}
+
+body {
+    background-color: #F4F6F7;
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    transition: background-image 0.5s ease;
+}
+
+body.weather-sunny {
+    background-image: url('../img/sunny.jpg');
+}
+
+body.weather-cloudy {
+    background-image: url('../img/cloudy.jpg');
+}
+
+body.weather-rainy {
+    background-image: url('../img/rainy.jpg');
+}
+
+body.weather-snowy {
+    background-image: url('../img/snowy.jpg');
+}
+
+body.weather-windy {
+    background-image: url('../img/windy.jpg');
+}
+
+#wrapper {
+    background-color: rgba(40, 104, 140, 0.85);
+    /* Semi-transparent blue */
+    backdrop-filter: blur(5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+    border-radius: 15px;
+    margin: 60px auto;
+    max-width: 720px;
+    padding: 0px;
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#current-weather {
+    padding: 15px;
+}
+
+#mainTemperature {
+    font-size: 5.5em;
+    line-height: 0.7;
+}
+
+#tempDescription {
+    margin-top: 10px;
+    text-align: center;
+}
+
+.day-weather-box {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: rgba(46, 127, 161, 0.6);
+    border-radius: 8px;
+    padding: 10px;
+    min-height: 80px;
+    margin-bottom: 5px;
+}
+
+.day-weather-box p {
+    margin-bottom: 0;
+}
+
+.side-weather-info {
+    padding: 0px 10px;
+}
+
+.day-weather-inner-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.forecast-main {
+    padding: 0px 0px 0px 30px;
+}
+
+.forecast-icon {
+    font-size: 28px;
+    display: block;
+    margin-top: 5px;
+}
+
+.modal-body p {
+    color: #333;
+}
+
+/* Autocomplete Styles */
+.search-container {
+    position: relative;
+}
+
+.autocomplete-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 15px;
+    right: 15px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 0 0 15px 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    display: none;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.autocomplete-dropdown.show {
+    display: block;
+}
+
+.autocomplete-item {
+    padding: 8px 15px;
+    cursor: pointer;
+    color: #333;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    transition: background 0.2s;
+    font-size: 13px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.autocomplete-item:hover,
+.autocomplete-item.active {
+    background: rgba(46, 127, 161, 0.1);
+    color: #2E7FA1;
+}
+
+.autocomplete-item .city-country {
+    font-size: 11px;
+    opacity: 0.6;
+}
+
+#cityInput::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* Dark Mode Styles */
+body.dark-mode #wrapper {
+    background-color: rgba(20, 30, 40, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+body.dark-mode .day-weather-box {
+    border-color: #1c2a38;
+    background-color: rgba(30, 45, 60, 0.8);
+}
+
+body.dark-mode .autocomplete-dropdown {
+    background: rgba(30, 45, 60, 0.95);
+    color: #e0e0e0;
+}
+
+body.dark-mode .autocomplete-item {
+    color: #e0e0e0;
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .autocomplete-item:hover,
+body.dark-mode .autocomplete-item.active {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+body.dark-mode .modal-body p {
+    color: #e0e0e0;
+}
+body.dark-mode .modal-content {
+    background-color: #1a202c;
+}

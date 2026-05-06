@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <!-- Weather Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/weather-icons/2.0.10/css/weather-icons.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+    <div class="container" id="wrapper">
+        <!-- Top Bar with Search and Dark Mode -->
+        <div class="top-bar" style="display: flex; align-items: center; padding: 15px 15px 0 15px; gap: 10px;">
+            <div class="search-container" style="flex: 1; position: relative;">
+                <div class="input-group">
+                    <input type="text" id="cityInput" class="form-control" placeholder="Search city..." autocomplete="off" style="background: rgba(255,255,255,0.2); border: none; color: white; height: 40px; border-radius: 20px 0 0 20px;">
+                    <span class="input-group-btn">
+                        <button class="btn btn-default" id="searchBtn" type="button" style="height: 40px; border-radius: 0 20px 20px 0; background: rgba(255,255,255,0.3); border: none; color: white;"><i class="fa fa-search"></i></button>
+                    </span>
+                </div>
+                <div id="autocompleteDropdown" class="autocomplete-dropdown"></div>
+            </div>
+            <button id="darkModeToggle" class="btn btn-link" style="color: white; font-size: 22px; padding: 0; text-decoration: none; line-height: 1;">🌙</button>
+        </div>
+
+        <div class="container-fluid" id="current-weather">
+            <div class="row">
+
+                <!-- Right panel -->
+                <div class="col-md-4 col-sm-5">
+                    <h5>
+                        <span id="cityName"></span> <span id="cityCode"></span>
+                    </h5>
+                    <h6 id="localDate"></h6>
+                    <h5 id="localTime"></h5>
+                    <a id="refreshButton" href="#"><i class="fa fa-refresh fa-fw" aria-hidden="true"></i> Refresh</a>
+                </div>
+
+                <!-- Center panel -->
+                <div class="col-md-5 col-sm-7" style="margin: 10px auto;padding:0;">
+                    <div class="row text-center">
+                        <div class="col-xs-12">
+                            <i class="wi" id="main-icon" style="font-size: 85px;"></i>
+                        </div>
+                        <div class="col-xs-12">
+                            <span id="mainTemperature" style="font-size: 5.5em; line-height: 0.7;"></span>
+                            <p id="tempDescription" style="margin-top: 10px;"></p>
+                        </div>
+                        <div class="col-xs-12">
+                            <p style="font-size: 1.5rem;"><a href="#" class="active" id="celcius">°C</a> | <a href="#"
+                                    id="farenheit">°F</a></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Left panel -->
+                <div class="col-xs-12 col-sm-12 col-md-3 row" style="text-align: right;">
+                    <div class="col-md-12 col-sm-3 col-xs-3 side-weather-info">
+                        <h6>Humidity: <span id="humidity"></span></h6>
+                    </div>
+                    <div class="col-md-12 col-sm-3 col-xs-3 side-weather-info">
+                        <h6>Wind: <span id="wind"></span></h6>
+                    </div>
+                    <div class="col-md-12 col-sm-3 col-xs-3 side-weather-info">
+                        <h6>High: <span id="mainTempHot"></span></h6>
+                    </div>
+                    <div class="col-md-12 col-sm-3 col-xs-3 side-weather-info">
+                        <h6>Low: <span id="mainTempLow"></span></h6>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- 4 days forecast -->
+        <div class="container-fluid">
+            <div class="row" style="padding: 2px;">
+
+                <!-- Day 1 -->
+                <div class="col-md-3 col-sm-6 day-weather-box">
+                    <div class="day-weather-inner-box">
+                        <div class="forecast-main">
+                            <p id="forecast-day-1-name" style="font-weight: bold; margin-bottom: 5px;"></p>
+                            <i class="wi forecast-icon" id="forecast-day-1-icon"></i>
+                            <h5 id="forecast-day-1-main" style="margin: 5px 0 0 0;"></h5>
+                        </div>
+                        <div class="forecast-min-low" style="text-align: right;">
+                            <p><span class="high-temperature" id="forecast-day-1-ht"></span></p>
+                            <p><span class="low-temperature" id="forecast-day-1-lt" style="opacity: 0.7;"></span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Day 2 -->
+                <div class="col-md-3 col-sm-6 day-weather-box">
+                    <div class="day-weather-inner-box">
+                        <div class="forecast-main">
+                            <p id="forecast-day-2-name" style="font-weight: bold; margin-bottom: 5px;"></p>
+                            <i class="wi forecast-icon" id="forecast-day-2-icon"></i>
+                            <h5 id="forecast-day-2-main" style="margin: 5px 0 0 0;"></h5>
+                        </div>
+                        <div class="forecast-min-low" style="text-align: right;">
+                            <p><span class="high-temperature" id="forecast-day-2-ht"></span></p>
+                            <p><span class="low-temperature" id="forecast-day-2-lt" style="opacity: 0.7;"></span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Day 3 -->
+                <div class="col-md-3 col-sm-6 day-weather-box">
+                    <div class="day-weather-inner-box">
+                        <div class="forecast-main">
+                            <p id="forecast-day-3-name" style="font-weight: bold; margin-bottom: 5px;"></p>
+                            <i class="wi forecast-icon" id="forecast-day-3-icon"></i>
+                            <h5 id="forecast-day-3-main" style="margin: 5px 0 0 0;"></h5>
+                        </div>
+                        <div class="forecast-min-low" style="text-align: right;">
+                            <p><span class="high-temperature" id="forecast-day-3-ht"></span></p>
+                            <p><span class="low-temperature" id="forecast-day-3-lt" style="opacity: 0.7;"></span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Day 4 -->
+                <div class="col-md-3 col-sm-6 day-weather-box">
+                    <div class="day-weather-inner-box">
+                        <div class="forecast-main">
+                            <p id="forecast-day-4-name" style="font-weight: bold; margin-bottom: 5px;"></p>
+                            <i class="wi forecast-icon" id="forecast-day-4-icon"></i>
+                            <h5 id="forecast-day-4-main" style="margin: 5px 0 0 0;"></h5>
+                        </div>
+                        <div class="forecast-min-low" style="text-align: right;">
+                            <p><span class="high-temperature" id="forecast-day-4-ht"></span></p>
+                            <p><span class="low-temperature" id="forecast-day-4-lt" style="opacity: 0.7;"></span></p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <!-- Custom JS -->
+    <script src="js/app.js"></script>
+</body>
+
+</html>
