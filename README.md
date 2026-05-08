@@ -2,6 +2,8 @@
 
 A feature-rich, interactive weather application providing real-time meteorological data with a focus on user engagement through dynamic UI elements and personalized feedback.
 
+Credits to Miguel Encarnacion for the frontend. His work can be found here:
+https://codepen.io/MiguelEnc/pen/vmZVar
 
  Key Capabilities
 
