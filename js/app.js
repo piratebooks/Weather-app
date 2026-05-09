@@ -1,11 +1,13 @@
 var unitIsCelcius = true;
 var globalForecast = [];
 var lat, lon;
+var currentTimezone = null;
+var clockInterval;
 var currentFocus = -1;
 var autocompleteTimeout;
 
 // Geoapify API key (replace with your actual key)
-const GEOAPIFY_API_KEY = "REPLACE HERE WITH YOUR GEOAPIFY API KEY";
+const GEOAPIFY_API_KEY = "0d30662c71064dfe8045d568a7b6afc7";
 // Maps Open-Meteo weather codes to Weather Icons
 var weatherIconsMap = {
     0: "wi-day-sunny", // Clear sky
@@ -72,14 +74,39 @@ var weatherDescriptions = {
 
 $(function () {
     getClientPosition();
-    startClock();
+    startClock(currentTimezone); // Start with no timezone, will update when city is loaded
     initSearch();
     initDarkMode();
 });
 
-function startClock() {
-    setInterval(function () {
-        $("#localTime").text(new Date().toLocaleTimeString());
+function startClock(timezone) {
+    // Clear previous interval if it exists
+    if (clockInterval) clearInterval(clockInterval);
+    
+    clockInterval = setInterval(function () {
+        var now = new Date();
+        var timeString;
+        
+        if (timezone) {
+            // Display time in the searched city's timezone
+            try {
+                timeString = now.toLocaleString('en-US', { 
+                    timeZone: timezone,
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    hour12: true
+                });
+            } catch (e) {
+                // Fallback if timezone is invalid
+                timeString = now.toLocaleTimeString();
+            }
+        } else {
+            // Display browser's local time if no timezone provided
+            timeString = now.toLocaleTimeString();
+        }
+        
+        $("#localTime").text(timeString);
     }, 1000);
 }
 
@@ -321,6 +348,9 @@ function getWeatherData(latitude, longitude) {
             forecast_days: 5
         },
         success: function (data) {
+            // Store timezone and restart clock with city's timezone
+            currentTimezone = data.timezone;
+            startClock(data.timezone);
             processOpenMeteoData(data);
             $("#refreshButton").html("<i class='fa fa-refresh fa-fw'></i> Refresh");
         },
