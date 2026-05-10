@@ -197,3 +197,29 @@ body.dark-mode .modal-body p {
 body.dark-mode .modal-content {
     background-color: #1a202c;
 }
+
+/* Weather background styles */
+body.weather-sunny {
+    background-image: linear-gradient(135deg, #ffd76d 0%, #ff9c4b 100%);
+}
+
+body.weather-cloudy {
+    background-image: linear-gradient(135deg, #748899 0%, #495867 100%);
+}
+
+body.weather-rainy {
+    background-image: linear-gradient(135deg, #4b79a1 0%, #283e51 100%);
+}
+
+body.weather-snowy {
+    background-image: linear-gradient(135deg, #e0f7ff 0%, #b9d5ff 100%);
+    color: #1a1a1a;
+}
+
+body.weather-stormy {
+    background-image: linear-gradient(135deg, #2e3e5c 0%, #1f2738 100%);
+}
+
+body.weather-foggy {
+    background-image: linear-gradient(135deg, #c3c7c8 0%, #7a8a99 100%);
+}

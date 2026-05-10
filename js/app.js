@@ -7,7 +7,7 @@ var currentFocus = -1;
 var autocompleteTimeout;
 
 // Geoapify API key (replace with your actual key)
-const GEOAPIFY_API_KEY = "0d30662c71064dfe8045d568a7b6afc7";
+const GEOAPIFY_API_KEY = "API GOES HERE";
 // Maps Open-Meteo weather codes to Weather Icons
 var weatherIconsMap = {
     0: "wi-day-sunny", // Clear sky
@@ -438,7 +438,7 @@ function updateForecast(forecast) {
     $("#mainTempHot").text(renderTemp(today.temp.max) + "°");
     $("#mainTempLow").text(renderTemp(today.temp.min) + "°");
 
-    updateBackground(today.weather[0].main);
+    updateBackground(parseInt(today.weather[0].icon, 10));
 
     for (var i = 1; i < Math.min(forecast.list.length, 5); i++) {
         var day = forecast.list[i];
@@ -467,15 +467,28 @@ $("#celcius, #farenheit").on("click", function (e) {
     }
 });
 
-function updateBackground(weatherMain) {
+function updateBackground(code) {
     var body = $("body");
-    body.removeClass("weather-sunny weather-cloudy weather-rainy weather-snowy weather-windy");
-    var w = weatherMain.toLowerCase();
-    if (w.includes("clear")) body.addClass("weather-sunny");
-    else if (w.includes("cloud")) body.addClass("weather-cloudy");
-    else if (w.includes("rain") || w.includes("drizzle") || w.includes("thunder")) body.addClass("weather-rainy");
-    else if (w.includes("snow")) body.addClass("weather-snowy");
-    else body.addClass("weather-windy");
+
+    body.removeClass(
+        "weather-sunny weather-cloudy weather-rainy weather-snowy weather-stormy weather-foggy weather-windy"
+    );
+
+    if (code === 0) {
+        body.addClass("weather-sunny");
+    } else if ([1, 2, 3].includes(code)) {
+        body.addClass("weather-cloudy");
+    } else if ([45, 48].includes(code)) {
+        body.addClass("weather-foggy");
+    } else if ([51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82].includes(code)) {
+        body.addClass("weather-rainy");
+    } else if ([71, 73, 75, 77, 85, 86].includes(code)) {
+        body.addClass("weather-snowy");
+    } else if ([95, 96, 99].includes(code)) {
+        body.addClass("weather-stormy");
+    } else {
+        body.addClass("weather-cloudy");
+    }
 }
 
 function getFormattedDate(date) {

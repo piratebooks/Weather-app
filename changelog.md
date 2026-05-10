@@ -5,3 +5,6 @@ Fixed formatting and alignmen issues
 
 V1.2
 The clock now switches timezones based off of the searched city, NO API REQUIRED
+
+V.12
+BG now changes color according to the weather forecast (Blue for rain, grey for overcast, etc)
